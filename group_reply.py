@@ -33,9 +33,9 @@ class MyClient(botpy.Client):
         content = message.content.strip().split()
         if len(content) == 0:
             return
-        if content[0] == "买面包":
+        if content[0] == "/买面包":
             if not (user in self.data):
-                if content[0] == "买面包" and isinstance(content[1], str):
+                if isinstance(content[1], str):
                     if not any(user_data.get('id') == content[1] for user_data in self.data.values()):
                             self.data[user] = {"id": content[1], "number": 0, 'last_claim': 0, "last_rob": 0}
                     else:
@@ -50,14 +50,14 @@ class MyClient(botpy.Client):
                         group_openid=message.group_openid,
                         msg_type=0,
                         msg_id=message.id,
-                        content=f"格式错误：买面包 <id> (id 不能有空格)"
+                        content=f"格式错误：/买面包 <id> (id 不能有空格)"
                     )
             else:
                 messageResult = await message._api.post_group_message(
                     group_openid=message.group_openid,
                     msg_type=0,
                     msg_id=message.id,
-                    content=f"\n第一次买面包需要附上昵称: 买面包 <id> (id 不能有空格)"
+                    content=f"\n第一次买面包需要附上昵称: /买面包 <id> (id 不能有空格)"
                 )
             if user in self.data:
                 if (now.weekday() == 5 or now.weekday() == 6) and (
@@ -82,7 +82,7 @@ class MyClient(botpy.Client):
                         msg_id=message.id,
                         content=f"现在还不能买面包哦~"
                     )
-        elif content[0] == "抢面包":
+        elif content[0] == "/抢面包":
             if now.timestamp() - self.data[user]["last_rob"] < 5400:
                 messageResult = await message._api.post_group_message(
                     group_openid=message.group_openid,
@@ -124,6 +124,13 @@ class MyClient(botpy.Client):
                         msg_id=message.id,
                         content=f"未找到用户{content[1]}"
                     )
+            else:
+                messageResult = await message._api.post_group_message(
+                    group_openid=message.group_openid,
+                    msg_type=0,
+                    msg_id=message.id,
+                    content=f"格式错误: /抢面包 <id>"
+                )
 
             # _log.info(messageResult)
             # print(f"author:{message.author} \n content:{message.content} \n id:{message.id} "
