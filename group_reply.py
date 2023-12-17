@@ -57,7 +57,15 @@ class MyClient(botpy.Client):
                     return
                 if isinstance(content[1], str):
                     if not any(user_data.get('id') == content[1] for user_data in self.data.values()):
-                        self.data[user] = {"id": content[1], "number": 0, 'last_claim': 0, "last_rob": 0}
+                        if len(content[1]) <=8:
+                            self.data[user] = {"id": content[1], "number": 0, 'last_claim': 0, "last_rob": 0}
+                        else:
+                            messageResult = await message._api.post_group_message(
+                                group_openid=message.group_openid,
+                                msg_type=0,
+                                msg_id=message.id,
+                                content=f"id长度应小于8"
+                            )
                     else:
                         messageResult = await message._api.post_group_message(
                             group_openid=message.group_openid,
