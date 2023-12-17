@@ -119,19 +119,28 @@ class MyClient(botpy.Client):
                     for user_data in self.data.values():
                         if user_data.get('id') == content[1]:
                             if user_data['number'] - robbed > 0:
-                                user_data['number'] -= robbed
-                                self.data[user]['number'] += robbed
-                                self.data[user]['last_rob'] = now.timestamp()
-                                with open(bread, 'w') as file:
-                                    json.dump(self.data, file)
-                                    file.flush()
+                                if random.random() < 0.85:
+                                    user_data['number'] -= robbed
+                                    self.data[user]['number'] += robbed
+                                    self.data[user]['last_rob'] = now.timestamp()
+                                    with open(bread, 'w') as file:
+                                        json.dump(self.data, file)
+                                        file.flush()
 
-                                messageResult = await message._api.post_group_message(
-                                    group_openid=message.group_openid,
-                                    msg_type=0,
-                                    msg_id=message.id,
-                                    content=f"\n抢了{robbed}个面包\n当前拥有{self.data[user]['number']}个面包\n{content[1]}还剩{user_data['number']}个面包"
-                                )
+                                    messageResult = await message._api.post_group_message(
+                                        group_openid=message.group_openid,
+                                        msg_type=0,
+                                        msg_id=message.id,
+                                        content=f"\n抢了{robbed}个面包\n当前拥有{self.data[user]['number']}个面包\n{content[1]}还剩{user_data['number']}个面包"
+                                    )
+
+                                else:
+                                    messageResult = await message._api.post_group_message(
+                                        group_openid=message.group_openid,
+                                        msg_type=0,
+                                        msg_id=message.id,
+                                        content=f"\n没抢到面包，被{content[1]}揍了一顿"
+                                    )
                             else:
                                 messageResult = await message._api.post_group_message(
                                     group_openid=message.group_openid,
