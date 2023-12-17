@@ -145,6 +145,17 @@ class MyClient(botpy.Client):
                     msg_id=message.id,
                     content=f"格式错误: /抢面包 <id>"
                 )
+        elif content[0] == '/排行榜':
+            bread_rank = dict(sorted(self.data.items(), key=lambda item: item[1]['number'], reverse=True))
+            output = "\n"
+            for key, value in bread_rank.items():
+                output += f"{value['id']}: {value['number']}\n"
+            messageResult = await message._api.post_group_message(
+                group_openid=message.group_openid,
+                msg_type=0,
+                msg_id=message.id,
+                content=f"{output}"
+            )
 
             # _log.info(messageResult)
             # print(f"author:{message.author} \n content:{message.content} \n id:{message.id} "
