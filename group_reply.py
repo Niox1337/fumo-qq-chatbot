@@ -82,8 +82,8 @@ class MyClient(botpy.Client):
                     )
 
             if user in self.data:
-                if (now.weekday() == 5 or now.weekday() == 6) and (
-                        (now.timestamp() - self.data[user]["last_claim"]) > 36000):
+                cool_down = round(5400 - (now.timestamp() - self.data[user]["last_claim"]))
+                if (now.weekday() == 5 or now.weekday() == 6) and (cool_down <= 0):
                     number_obtained = random.randint(1, 3)
                     self.data[user]["number"] += number_obtained
                     self.data[user]["last_claim"] = now.timestamp()
@@ -102,15 +102,16 @@ class MyClient(botpy.Client):
                         group_openid=message.group_openid,
                         msg_type=0,
                         msg_id=message.id,
-                        content=f"现在还不能买面包哦~"
+                        content=f"\n现在还不能买面包哦~\n剩余{cool_down}秒"
                     )
         elif content[0] == "/抢面包":
-            if now.timestamp() - self.data[user]["last_rob"] < 5400:
+            cool_down = 5400 - round(now.timestamp() - self.data[user]["last_rob"])
+            if cool_down >= 0:
                 messageResult = await message._api.post_group_message(
                     group_openid=message.group_openid,
                     msg_type=0,
                     msg_id=message.id,
-                    content=f"现在还不能抢面包哦"
+                    content=f"\n现在还不能抢面包哦~\n剩余时间{cool_down}秒"
                 )
                 return
             if len(content) >= 2:
