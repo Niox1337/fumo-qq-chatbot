@@ -113,8 +113,8 @@ class MyClient(botpy.Client):
                             if user_data['number'] - robbed > 0:
                                 user_data['number'] -= robbed
                                 self.data[user]['number'] += robbed
-                                self.data[user]['last_time'] = now.timestamp()
-                                with open(bread, 'a+') as file:
+                                self.data[user]['last_rob'] = now.timestamp()
+                                with open(bread, 'w') as file:
                                     json.dump(self.data, file)
                                     file.flush()
 
