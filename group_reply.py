@@ -23,7 +23,7 @@ class MyClient(botpy.Client):
         super().__init__(*args, **kwargs)
 
         # Open the file for reading and appending
-        with open(bread, 'a+') as file:
+        with open(bread, 'r') as file:
             try:
                 # Check if the file is empty before attempting to load JSON data
                 file.seek(0)
@@ -75,11 +75,11 @@ class MyClient(botpy.Client):
 
             if user in self.data:
                 if (now.weekday() == 5 or now.weekday() == 6) and (
-                        (now.timestamp() - int(self.data[user]["last_claim"])) > 36000):
+                        (now.timestamp() - self.data[user]["last_claim"]) > 36000):
                     number_obtained = random.randint(1, 3)
                     self.data[user]["number"] += number_obtained
-                    self.data[user]["last_time"] = now.timestamp()
-                    with open(bread, 'a+') as file:
+                    self.data[user]["last_claim"] = now.timestamp()
+                    with open(bread, 'w') as file:
                         json.dump(self.data, file)
                         file.flush()
 
@@ -148,7 +148,7 @@ class MyClient(botpy.Client):
 
             # _log.info(messageResult)
             # print(f"author:{message.author} \n content:{message.content} \n id:{message.id} "
-            #       f"\n group_openid:{message.group_openid} \nevent_id:{message.event_id}"
+            #       f"\n group_openid:{message.group_openid} \n event_id:{message.event_id}"
             #       f"attachment: {message.attachments}\n mentions:{message.mentions}"
             #       f"\n reference: {message.message_reference} \n seq: {message.msg_seq}")
             # print(messageResult)
