@@ -15,7 +15,7 @@ bread = os.path.join(os.path.dirname(__file__), "bread.json")
 _log = logging.get_logger()
 
 
-# {"userid": {"number": 1, "last_claim": 1, "id": "id", "last_rob" = 0}}
+# {<"userid">: {"id": <"id">", number": 1, "last_claim": 1, "last_rob" = 1}}
 
 class MyClient(botpy.Client):
     with open(bread, 'a+') as file:
@@ -37,7 +37,7 @@ class MyClient(botpy.Client):
             if not (user in self.data):
                 if content[0] == "买面包" and isinstance(content[1], str):
                     if not any(user_data.get('id') == content[1] for user_data in self.data.values()):
-                            self.data[user] = {"number": 0, 'last_claim': 0, "id": content[1]}
+                            self.data[user] = {"id": content[1], "number": 0, 'last_claim': 0, "last_rob": 0}
                     else:
                         messageResult = await message._api.post_group_message(
                             group_openid=message.group_openid,
@@ -83,6 +83,13 @@ class MyClient(botpy.Client):
                         content=f"现在还不能买面包哦~"
                     )
         elif content[0] == "抢面包":
+            if now.timestamp() - self.data[user]["last_rob"] < 5400:
+                messageResult = await message._api.post_group_message(
+                    group_openid=message.group_openid,
+                    msg_type=0,
+                    msg_id=message.id,
+                    content=f"现在还不能抢面包哦"
+                )
             if len(content) >= 2:
                 if any(user_data.get('id') == content[1] for user_data in self.data.values()):
                     robbed = random.randint(1, 3)
@@ -91,6 +98,7 @@ class MyClient(botpy.Client):
                             if user_data['number'] - robbed > 0:
                                 user_data['number'] -= robbed
                                 self.data[user]['number'] += robbed
+                                self.data[user]['last_time'] = now.timestamp()
                                 with open(bread, 'a+') as file:
                                     json.dump(self.data, file)
                                     file.flush()
