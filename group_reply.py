@@ -90,6 +90,7 @@ class MyClient(botpy.Client):
                     msg_id=message.id,
                     content=f"现在还不能抢面包哦"
                 )
+                return
             if len(content) >= 2:
                 if any(user_data.get('id') == content[1] for user_data in self.data.values()):
                     robbed = random.randint(1, 3)
@@ -116,6 +117,13 @@ class MyClient(botpy.Client):
                                     msg_id=message.id,
                                     content=f"\n{content[1]}太穷了，抢抢别人吧qaq"
                                 )
+                else:
+                    messageResult = await message._api.post_group_message(
+                        group_openid=message.group_openid,
+                        msg_type=0,
+                        msg_id=message.id,
+                        content=f"未找到用户{content[1]}"
+                    )
 
             # _log.info(messageResult)
             # print(f"author:{message.author} \n content:{message.content} \n id:{message.id} "
