@@ -10,19 +10,31 @@ from botpy.ext.cog_yaml import read
 from botpy.message import GroupMessage, Message
 
 test_config = read(os.path.join(os.path.dirname(__file__), "config.yaml"))
-bread = os.path.join(os.path.dirname(__file__), "bread.json")
 
 _log = logging.get_logger()
 
-
 # {<"userid">: {"id": <"id">", number": 1, "last_claim": 1, "last_rob" = 1}}
 
+bread = "bread.json"
+
+
 class MyClient(botpy.Client):
-    with open(bread, 'a+') as file:
-        try:
-            data = json.load(file)
-        except json.JSONDecodeError:
-            data = {}
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Open the file for reading and appending
+        with open(bread, 'a+') as file:
+            try:
+                # Check if the file is empty before attempting to load JSON data
+                file.seek(0)
+                if file.read(1):
+                    file.seek(0)
+                    self.data = json.load(file)
+                else:
+                    self.data = {}
+            except json.JSONDecodeError:
+                # Handle the case where the file is not valid JSON
+                self.data = {}
 
     async def on_ready(self):
         _log.info(f"robot 「{self.robot.name}」 on_ready!")
@@ -35,9 +47,17 @@ class MyClient(botpy.Client):
             return
         if content[0] == "/买面包":
             if not (user in self.data):
+                if len(content) < 2:
+                    messageResult = await message._api.post_group_message(
+                        group_openid=message.group_openid,
+                        msg_type=0,
+                        msg_id=message.id,
+                        content=f"\n第一次买面包需要附上昵称: /买面包 <id> (id 不能有空格)"
+                    )
+                    return
                 if isinstance(content[1], str):
                     if not any(user_data.get('id') == content[1] for user_data in self.data.values()):
-                            self.data[user] = {"id": content[1], "number": 0, 'last_claim': 0, "last_rob": 0}
+                        self.data[user] = {"id": content[1], "number": 0, 'last_claim': 0, "last_rob": 0}
                     else:
                         messageResult = await message._api.post_group_message(
                             group_openid=message.group_openid,
@@ -52,16 +72,10 @@ class MyClient(botpy.Client):
                         msg_id=message.id,
                         content=f"格式错误：/买面包 <id> (id 不能有空格)"
                     )
-            else:
-                messageResult = await message._api.post_group_message(
-                    group_openid=message.group_openid,
-                    msg_type=0,
-                    msg_id=message.id,
-                    content=f"\n第一次买面包需要附上昵称: /买面包 <id> (id 不能有空格)"
-                )
+
             if user in self.data:
                 if (now.weekday() == 5 or now.weekday() == 6) and (
-                        (now.timestamp() - int(self.data[user]["last_time"])) > 36000):
+                        (now.timestamp() - int(self.data[user]["last_claim"])) > 36000):
                     number_obtained = random.randint(1, 3)
                     self.data[user]["number"] += number_obtained
                     self.data[user]["last_time"] = now.timestamp()
